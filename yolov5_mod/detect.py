@@ -38,9 +38,7 @@ from pathlib import Path
 import torch
 
 # FILE = Path(__file__).resolve()
-FILE = Path(
-    r"D:\Users\Xinlly\Documents\vsProject\yolov5_demo\yolov5\detect.py"
-).resolve()
+FILE = Path("../yolov5/detect.py").resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
