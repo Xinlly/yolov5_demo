@@ -87,7 +87,8 @@ def areaMeanTemper(img: cv2.typing.MatLike, xyxy: list):
     # 数组归一化
     array_img = np.array(img_gray) / 255
     # 求取平均值保留三位有效数字
-    temper = np.around(np.mean(array_img), decimals=3)
+    meanGrayValue = np.mean(array_img)
+    temper = np.around(meanGrayValue * 10.843 + 24.797, decimals=3)
     return temper
 
 
