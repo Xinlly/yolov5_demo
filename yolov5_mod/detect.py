@@ -71,45 +71,7 @@ from utils.general import (
     xyxy2xywh,
 )
 from utils.torch_utils import select_device, smart_inference_mode
-import numpy as np
-
-
-def areaMeanTemper(img: cv2.typing.MatLike, xyxy: list):
-    xy0 = np.array(xyxy[0:2]).astype(int)
-    xy1 = np.array(xyxy[2:4]).astype(int)
-    # 切割图像
-    # img_area=img[y1:y2, x1:x2]
-    img_area = img[xy0[1] : xy1[1], xy0[0] : xy1[0]]
-    # 保存图像
-    # cv2.imwrite("../.temp/img/temp_area.jpg", img)
-    # 转换为灰度图
-    img_gray = cv2.cvtColor(img_area, cv2.COLOR_BGR2GRAY)
-    # 数组归一化
-    array_img = np.array(img_gray) / 255
-    # 求取平均值保留三位有效数字
-    meanGrayValue = np.mean(array_img)
-    temper = np.around(meanGrayValue * 10.843 + 24.797, decimals=3)
-    return temper
-
-
-def areaMeanTemperStr(img: cv2.typing.MatLike, xyxy: list):
-    xy0 = np.array(xyxy[0:2]).astype(int)
-    xy1 = np.array(xyxy[2:4]).astype(int)
-    # 切割图像
-    # img_area=img[y1:y2, x1:x2]
-    img_area = img[xy0[1] : xy1[1], xy0[0] : xy1[0]]
-    # 保存图像
-    # cv2.imwrite("../.temp/img/temp_area.jpg", img)
-    # 转换为灰度图
-    img_gray = cv2.cvtColor(img_area, cv2.COLOR_BGR2GRAY)
-    # 数组归一化
-    array_img = np.array(img_gray) / 255
-    # 求取平均值保留三位有效数字
-    meanGrayValue = np.mean(array_img)
-    temper0 = np.around(meanGrayValue * 10.843 + 24.797, decimals=3)
-    temper1 = np.around(meanGrayValue * 25.531 + 12.738, decimals=3)
-    unit = "degC"
-    return f"{temper0}"
+import mymod.mymod as mod
 
 
 @smart_inference_mode()
@@ -287,9 +249,24 @@ def run(
                     label = names[c] if hide_conf else f"{names[c]}"
                     confidence = float(conf)
                     confidence_str = f"{confidence:.2f}"
+                    xyxy_list = torch.tensor(xyxy).view(1, 4).tolist()[0]
+                    temper = (
+                        f"{mod.areaMeanTemper(im_temper, xyxy_list)}"
+                        if show_temper
+                        else ""
+                    )
 
                     if save_csv:
-                        write_to_csv(p.name, label, confidence_str)
+                        # write_to_csv(p.name, label, confidence_str)
+                        mod.write_to_csv(
+                            csv_path,
+                            {
+                                "Image Name": p.name,
+                                "Prediction": label,
+                                "Temperature": f"{temper}",
+                                "Confidence": confidence_str,
+                            },
+                        )
 
                     if save_txt:  # Write to file
                         xywh = (
@@ -313,14 +290,8 @@ def run(
                             if hide_labels
                             else (names[c] if hide_conf else f"{names[c]} {conf:.2f}")
                         )
-                        xyxy_list = torch.tensor(xyxy).view(1, 4).tolist()[0]
-                        temper_str = (
-                            "" + areaMeanTemperStr(im_temper, xyxy_list)
-                            if show_temper
-                            else ""
-                        )
                         annotator.box_label(
-                            xyxy, f"{label}{temper_str}", color=colors(c, True)
+                            xyxy, f"{label}{temper}", color=colors(c, True)
                         )
 
                     if save_crop:
