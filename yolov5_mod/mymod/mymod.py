@@ -3,11 +3,12 @@ import csv
 import numpy as np
 
 
-def write_to_csv(csv_path, data:dict):
+def write_to_csv(csv_path, data: dict, is_header: bool = False):
     """Writes prediction data for an image to a CSV file, appending if the file exists."""
     with open(csv_path, mode="a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=data.keys())
-        if not csv_path.is_file():
+        # if not csv_path.is_file():
+        if f.tell() == 0 or is_header:
             writer.writeheader()
         writer.writerow(data)
 
@@ -29,4 +30,5 @@ def areaMeanTemper(img: cv2.typing.MatLike, xyxy: list):
     temper0 = np.around(meanGrayValue * 10.843 + 24.797, decimals=3)
     temper1 = np.around(meanGrayValue * 25.531 + 12.738, decimals=3)
     unit = "degC"
+    # return temper0
     return temper0
