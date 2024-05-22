@@ -158,6 +158,10 @@ def randomForest_demo(
         }
     rf_model = RandomForestClassifier(**best_params)
     rf_model.fit(X_train, Y_train)  # 训练模型
+
+    # mod.exportTree(rf_model, X1_name, X2_name)
+
+    # return
     # rf_model = model_search.best_estimator_
 
     # 预测分类结果
@@ -203,6 +207,16 @@ def train(data_temper, X1_name, X2_name, data_TSV):
     feature_names = [X1_name, X2_name, "env"]
     X = data_temper[feature_names].values
     Y = data_TSV.values
+    comfort_levels = [
+        "冷",
+        "凉",
+        "微凉",
+        "中性",
+        "微暖",
+        "暖",
+        "热",
+    ]
+    dir_img = mod.getDir(r"analyze\img\randomForest\exp")
 
     # # 划分训练集和测试集
     X_train, X_test, Y_train, Y_test = train_test_split(
@@ -218,6 +232,8 @@ def train(data_temper, X1_name, X2_name, data_TSV):
     ) = randomForest_demo(
         X_train, X_test, Y_train, Y_test, X1_name, X2_name, isSeach=False
     )
+    # randomForest_demo(X_train, X_test, Y_train, Y_test, X1_name, X2_name, isSeach=False)
+    # return
     print(f"Accuracy of train ({X1_name}, {X2_name}): {accuracy_train}")
     print(f"Accuracy of test ({X1_name}, {X2_name}): {accuracy_test}")
 
@@ -238,16 +254,6 @@ def train(data_temper, X1_name, X2_name, data_TSV):
         "mathtext.fontset": "stix",  # 设置 LaTeX 字体，stix 近似于 Times 字体
     }
     plt.rcParams.update(config_plt)
-
-    comfort_levels = [
-        "冷",
-        "凉",
-        "微凉",
-        "中性",
-        "微暖",
-        "暖",
-        "热",
-    ]
 
     # 计算训练集的混淆矩阵
     conf_matrix_train = np.round(
@@ -323,10 +329,16 @@ def train(data_temper, X1_name, X2_name, data_TSV):
     )
     subtitle.set_ha("left")
 
+    # 例遍fig中的子图，导出图片
+    for ax in fig.axes:
+        filename_img = rf"{dir_img}\{accuracy_test:.2f}_{X1_name}_{X2_name}\{accuracy_test:.2f}_{X1_name}_{X2_name}_{ax.get_title().replace(' ', '_')}.png"
+        # filename_img的文件夹不存在则创建
+        if not os.path.exists(os.path.dirname(filename_img)):
+            os.makedirs(os.path.dirname(filename_img))
+        mod.save_subfig(ax, filename_img, dpi=300)
+
     # 导出图片
-    filename_img = (
-        rf"analyze\img\randomForest\exp1\{accuracy_test:.2f}_{X1_name}_{X2_name}.png"
-    )
+    filename_img = rf"{dir_img}\{accuracy_test:.2f}_{X1_name}_{X2_name}.png"
     plt.savefig(
         filename_img,
         dpi=300,
@@ -466,9 +478,9 @@ def run():
     # for X_names in combinations:
     #     # print(f"X_names: {X_names}")
     #     train(data_temper_withoutZero, X_names[0], X_names[1], data_TSV)
-    # train(data_temper_withoutZero, "Cheek", "Nose", data_TSV)
+    train(data_temper_withoutZero, "Cheek", "Nose", data_TSV)
     # val_curve_demo(data_temper_withoutZero, "Cheek", "Nose", data_TSV)
-    test(data_temper_withoutZero, "Cheek", "Nose", data_TSV)
+    # test(data_temper_withoutZero, "Cheek", "Nose", data_TSV)
 
 
 if __name__ == "__main__":
